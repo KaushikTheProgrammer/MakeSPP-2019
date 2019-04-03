@@ -1,3 +1,10 @@
 MakeSPP.json
+<<<<<<< HEAD
 makesppenv/
 .vscode/
+=======
+MakeSPP-2019.json
+.vscode
+.idea
+makesppenv
+>>>>>>> 05e8ee31ef08f8d5a808b1589ac5ecc91a292f59
