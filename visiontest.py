@@ -21,20 +21,20 @@ while(True):
     # Capture frame-by-frame
     ret, frame = cap.read()
 
-    cv2.imwrite(file_name, frame)
+    # cv2.imwrite(file_name, frame)
 
-    # Loads the image into memory
-    with io.open(file_name, 'rb') as image_file:
-        content = image_file.read()
+    # # Loads the image into memory
+    # with io.open(file_name, 'rb') as image_file:
+    #     content = image_file.read()
 
-    image = types.Image(content=content)
+    # image = types.Image(content=content)
 
-    # Performs label detection on the image file
-    response = client.label_detection(image=image)
-    labels = response.label_annotations
+    # # Performs label detection on the image file
+    # response = client.label_detection(image=image)
+    # labels = response.label_annotations
 
-    for label in labels:
-        print(label.description, label.score)
+    # for label in labels:
+    #     print(label.description, label.score)
 
     cv2.imshow('currFrame', frame)
     if cv2.waitKey(1) & 0xFF == ord('q'):

@@ -1,2 +1,3 @@
 MakeSPP.json
-makesppenv
+makesppenv/
+.vscode/
