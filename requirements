@@ -1,3 +1,0 @@
-python version: 3.7
-google-cloud-vision --> (pip install --upgrade google-cloud-vision)
-open cv
