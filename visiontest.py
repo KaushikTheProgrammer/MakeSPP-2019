@@ -1,5 +1,6 @@
 import io
 import os
+import cv2
 
 # Imports the Google Cloud client library
 from google.cloud import vision
@@ -11,21 +12,34 @@ credentials = service_account.Credentials.from_service_account_file('MakeSPP.jso
 # Instantiates a client
 client = vision.ImageAnnotatorClient(credentials=credentials)
 
+cap = cv2.VideoCapture(0)
+
 # The name of the image file to annotate
-file_name = os.path.join(
-    os.path.dirname(__file__),
-    'images/hiding.jpg')
+file_name = 'images/live.jpg'
 
-# Loads the image into memory
-with io.open(file_name, 'rb') as image_file:
-    content = image_file.read()
+while(True):
+    # Capture frame-by-frame
+    ret, frame = cap.read()
 
-image = types.Image(content=content)
+    cv2.imwrite(file_name, frame)
 
-# Performs label detection on the image file
-response = client.label_detection(image=image)
-labels = response.label_annotations
+    # Loads the image into memory
+    with io.open(file_name, 'rb') as image_file:
+        content = image_file.read()
 
-print('Labels:')
-for label in labels:
-    print(label.description, label.score)
+    image = types.Image(content=content)
+
+    # Performs label detection on the image file
+    response = client.label_detection(image=image)
+    labels = response.label_annotations
+
+    for label in labels:
+        print(label.description, label.score)
+
+    cv2.imshow('currFrame', frame)
+    if cv2.waitKey(1) & 0xFF == ord('q'):
+        break
+
+# When everything done, release the capture
+cap.release()
+cv2.destroyAllWindows()
