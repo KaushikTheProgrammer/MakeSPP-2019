@@ -3,7 +3,6 @@ Dependencies:
 - google-cloud-vision --> (pip install --upgrade google-cloud-vision)
 - opencv --> (pip install opencv-python)
 - sightengine --> (pip install sightengine)
-- smtplib --> (pip install smtplib)
 - kivy --> (pip install kivy)
 - numpy --> (pip install numpy)
 - matplotlib --> (pip install matplotlib)
