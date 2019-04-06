@@ -12,17 +12,17 @@ framespeed = 1/30
 client = SightengineClient('185769829', 'b8CCfNrKrYnWYwsUeBbK')
 frame_counter = 0
 cap = cv2.VideoCapture('images/storerobbery.mp4')
-violenceFlag = False
+weaponFlag = False
 
 
 # Definition of kivy App instance
 class DisplayWindow(App):
-    global violenceFlag
+    global weaponFlag
     # Defining window contents
     def build(self):
         # Layout of window to contain image and label attributes
         self.layout = BoxLayout(orientation="vertical")
-        self.title_text = Label(text="Title", size_hint=(1, .1))
+        self.title_text = Label(text="Weapon Detection", size_hint=(1, .1))
         self.image = Image(source=file_name, size_hint=(1, .7))
         self.output = Label(text="one", size_hint=(1, .1))
         # Dynamic callbacks scheduled with Clock to display video feed and analysis
@@ -48,7 +48,7 @@ class DisplayWindow(App):
     
     # Refreshes label at specified time interval, checking for change in detection boolean
     def labelCallback(self, dt):
-        if violenceFlag:
+        if weaponFlag:
             self.output.text = "Weapon detected! Call the proper authorities!"
         else:
             self.output.text = ""
@@ -57,12 +57,12 @@ class DisplayWindow(App):
 def analyzeFrame():
     while True:
         global frame_counter
-        global violenceFlag
+        global weaponFlag
         if frame_counter == 10:
             output = client.check('wad').set_file('images/live.jpg')
             if output['status'] != 'failure':
                 if output['weapon'] > 0.1:
-                    violenceFlag = True
+                    weaponFlag = True
             frame_counter = 0
 
 
