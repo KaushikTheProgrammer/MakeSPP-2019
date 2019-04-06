@@ -4,18 +4,20 @@ from kivy.uix.boxlayout import BoxLayout
 from kivy.clock import Clock
 from kivy.uix.image import Image
 from sightengine.client import SightengineClient
+<<<<<<< HEAD
 from twilio.rest import Client
+=======
+>>>>>>> 398d0b1ad120232968f08d0af52b3aa7a043dcb8
 import cv2
 import threading
-import io
-import os
-from PIL import Image as PILIMAGE
 
 file_name = "image.jpg"
 framespeed = 1/30
 client = SightengineClient('185769829', 'b8CCfNrKrYnWYwsUeBbK')
 frame_counter = 0
 cap = cv2.VideoCapture('images/storerobbery.mp4')
+weaponFlag = False
+
 
 account_sid = 'AC90f079a5489b8cb3980a7c08e5d0f6ea'
 auth_token = '0b7adcb970830513ce6ae468edd6c535'
@@ -23,12 +25,12 @@ client = Client(account_sid, auth_token)
 
 # Definition of kivy App instance
 class DisplayWindow(App):
-    violenceFlag = False
+    global weaponFlag
     # Defining window contents
     def build(self):
         # Layout of window to contain image and label attributes
         self.layout = BoxLayout(orientation="vertical")
-        self.title_text = Label(text="Title", size_hint=(1, .1))
+        self.title_text = Label(text="Weapon Detection", size_hint=(1, .1))
         self.image = Image(source=file_name, size_hint=(1, .7))
         self.output = Label(text="one", size_hint=(1, .1))
         # Dynamic callbacks scheduled with Clock to display video feed and analysis
@@ -54,29 +56,35 @@ class DisplayWindow(App):
     
     # Refreshes label at specified time interval, checking for change in detection boolean
     def labelCallback(self, dt):
+<<<<<<< HEAD
         if(self.violenceFlag):
             self.output.text = "Violence has been detected."
-            message = client.messages \
-                .create(
-                     body=TEXT_MESSAGE,
-                     from_='+18482334348',
-                     to=PHONE_NUMBER
-                 )
-            print(message.sid)
+=======
+        if weaponFlag:
+            self.output.text = "Weapon detected! Call the proper authorities!"
+>>>>>>> 398d0b1ad120232968f08d0af52b3aa7a043dcb8
         else:
-            self.output.text = "two"
+            self.output.text = ""
+
 
 def analyzeFrame():
     while True:
         global frame_counter
+<<<<<<< HEAD
+=======
+        global weaponFlag
+>>>>>>> 398d0b1ad120232968f08d0af52b3aa7a043dcb8
         if frame_counter == 10:
             output = client.check('wad').set_file('images/live.jpg')
-            print(output)
+            if output['status'] != 'failure':
+                if output['weapon'] > 0.1:
+                    weaponFlag = True
             frame_counter = 0
+
 
 if __name__ == "__main__":
 
-    t2 = threading.Thread(target = analyzeFrame)
+    t2 = threading.Thread(target=analyzeFrame)
     t2.start()
 
     DisplayWindow().run()
