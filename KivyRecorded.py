@@ -5,8 +5,11 @@ from kivy.clock import Clock
 from kivy.uix.image import Image
 from sightengine.client import SightengineClient
 from twilio.rest import Client
+from email.mime.multipart import MIMEMultipart
+from email.mime.text import MIMEText
 import cv2
 import threading
+import smtplib
 
 file_name = "image.jpg"
 framespeed = 1/30
@@ -15,6 +18,28 @@ frame_counter = 0
 cap = cv2.VideoCapture('images/storerobbery.mp4')
 weaponFlag = False
 
+# create message object instance
+msg = MIMEMultipart()
+ 
+ 
+message = "Thank you"
+ 
+# setup the parameters of the message
+password = "MakeSPP-2019"
+msg['From'] = "makesppdetector@gmail.com"
+msg['To'] = "kaushikpprakash@gmail.com"
+msg['Subject'] = "Gun Detected! ACT IMMEDIATELY!"
+ 
+# add in the message body
+msg.attach(MIMEText(message, 'plain'))
+ 
+#create server
+server = smtplib.SMTP('smtp.gmail.com: 587')
+ 
+server.starttls()
+ 
+# Login Credentials for sending the mail
+server.login(msg['From'], password)
 
 account_sid = 'AC90f079a5489b8cb3980a7c08e5d0f6ea'
 auth_token = '0b7adcb970830513ce6ae468edd6c535'
@@ -83,6 +108,10 @@ def analyzeFrame():
                             from_='+18482334348',
                             to='+18482188011'
                         )
+                        # send the message via the server.
+                        server.sendmail(msg['From'], msg['To'], msg.as_string())
+                        server.quit()
+                        print("successfully sent email to %s:" % (msg['To']))
                         weaponFlag = True
                         text_sent = True
                         print(message.sid)
