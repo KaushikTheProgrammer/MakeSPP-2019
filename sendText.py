@@ -10,9 +10,9 @@ client = Client(account_sid, auth_token)
 
 message = client.messages \
                 .create(
-                     body="Jiebin I am going to kill you.",
+                     body=TEXT_MESSAGE,
                      from_='+18482334348',
-                     to='+17323547753'
+                     to=PHONE_NUMBER
                  )
 
 print(message.sid)
