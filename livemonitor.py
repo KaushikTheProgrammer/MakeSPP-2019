@@ -3,7 +3,6 @@ import os
 import cv2
 import time
 import threading 
-import runtime
 
 # Imports the Google Cloud client library
 from google.cloud import vision
@@ -50,7 +49,7 @@ if __name__ == "__main__":
         
         cv2.imshow('frame', frame)
 
-        if frame_counter > 29:
+        if frame_counter == 10:
             cv2.imwrite(file_name, frame)
             frame_counter = 0
 

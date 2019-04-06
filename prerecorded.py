@@ -8,6 +8,7 @@ import threading
 from google.cloud import vision
 from google.cloud.vision import types
 from google.oauth2 import service_account
+from sightengine.client import SightengineClient
 
 credentials = service_account.Credentials.from_service_account_file('MakeSPP.json')
 
@@ -17,6 +18,7 @@ client = vision.ImageAnnotatorClient(credentials=credentials)
 file_name = 'images/live.jpg'
 
 isQuit = False
+frame_counter = 0
 
 def analyzeFrame():
 
@@ -32,7 +34,9 @@ def analyzeFrame():
         labels = response.label_annotations
 
         for label in labels:
-            print(label.description)
+            if "boxing" in label.description:
+                print("Warning a fight is happening. PLease react immediately")
+
 
 if __name__ == "__main__":
 
@@ -40,7 +44,7 @@ if __name__ == "__main__":
     t1.start() 
 
     frame_counter = 0
-    cap = cv2.VideoCapture('images/robbery.mp4')
+    cap = cv2.VideoCapture('images/boxing.mp4')
 
     while True:
         # Capture frame-by-frame
@@ -48,8 +52,7 @@ if __name__ == "__main__":
         frame_counter += 1
         
         cv2.imshow('frame', frame)
-
-        if frame_counter > 29:
+        if frame_counter == 10:
             cv2.imwrite(file_name, frame)
             frame_counter = 0
 
