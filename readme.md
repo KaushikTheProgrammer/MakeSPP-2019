@@ -1,5 +1,6 @@
 Dependencies:
 <<<<<<< HEAD
+- python version: 3.6
 - google-cloud-vision --> (pip install --upgrade google-cloud-vision)
 - opencv --> (pip install opencv-python)
 - sightengine --> (pip install sightengine)
@@ -9,7 +10,7 @@ Dependencies:
 - pandas --> (pip install pandas)
 - flask --> (pip install flask)
 =======
-- python version: 3.7
+- python version: 3.6
 - google-cloud-vision   --> (pip3 install --upgrade google-cloud-vision)
 - opencv                --> (pip3 install opencv-python)
 - sightengine           --> (pip3 install sightengine)
