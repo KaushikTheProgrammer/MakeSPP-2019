@@ -13,7 +13,7 @@ import smtplib
 
 file_name = "image.jpg"
 framespeed = 1/60
-client = SightengineClient('185769829', 'b8CCfNrKrYnWYwsUeBbK')
+client = SightengineClient('1968420216', 'SdWBjWBcGSQWtW9Qkiiq')
 frame_counter = 0
 cap = cv2.VideoCapture('images/storerobbery.mp4')
 weaponFlag = False
@@ -22,7 +22,7 @@ weaponFlag = False
 msg = MIMEMultipart()
  
  
-message = "Thank you"
+message = "Gun Detected! ACT IMMEDIATELY!"
  
 # setup the parameters of the message
 password = "MakeSPP-2019"
@@ -97,13 +97,13 @@ def analyzeFrame():
                     if not detected:
                         message = twilioClient.messages \
                             .create(
-                            body="Gun Detected. Do something",
+                            body="Gun Detected! ACT IMMEDIATELY!",
                             from_='+18482334348',
                             to='+17327725794'
                         )
                         message = twilioClient.messages \
                             .create(
-                            body="Gun Detected. Do something",
+                            body="Gun Detected! ACT IMMEDIATELY!",
                             from_='+18482334348',
                             to='+18482188011'
                         )
