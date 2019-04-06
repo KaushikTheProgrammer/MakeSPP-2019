@@ -4,7 +4,7 @@ from kivy.uix.boxlayout import BoxLayout
 from kivy.clock import Clock
 from kivy.uix.image import Image
 from sightengine.client import SightengineClient
-from skimage import io
+from twilio.rest import Client
 import cv2
 import threading
 import io
@@ -12,10 +12,14 @@ import os
 from PIL import Image as PILIMAGE
 
 file_name = "image.jpg"
-framespeed = 1/10
+framespeed = 1/30
 client = SightengineClient('185769829', 'b8CCfNrKrYnWYwsUeBbK')
 frame_counter = 0
 cap = cv2.VideoCapture('images/storerobbery.mp4')
+
+account_sid = 'AC90f079a5489b8cb3980a7c08e5d0f6ea'
+auth_token = '0b7adcb970830513ce6ae468edd6c535'
+client = Client(account_sid, auth_token)
 
 # Definition of kivy App instance
 class DisplayWindow(App):
@@ -52,13 +56,20 @@ class DisplayWindow(App):
     def labelCallback(self, dt):
         if(self.violenceFlag):
             self.output.text = "Violence has been detected."
+            message = client.messages \
+                .create(
+                     body=TEXT_MESSAGE,
+                     from_='+18482334348',
+                     to=PHONE_NUMBER
+                 )
+            print(message.sid)
         else:
             self.output.text = "two"
 
 def analyzeFrame():
     while True:
         global frame_counter
-        if frame_counter == 5:
+        if frame_counter == 10:
             output = client.check('wad').set_file('images/live.jpg')
             print(output)
             frame_counter = 0
