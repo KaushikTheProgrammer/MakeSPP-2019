@@ -2,8 +2,7 @@ import io
 import os
 import cv2
 import time
-import threading 
-import runtime
+import threading
 
 # Imports the Google Cloud client library
 from google.cloud import vision
