@@ -12,7 +12,7 @@ import threading
 import smtplib
 
 file_name = "image.jpg"
-framespeed = 1/30
+framespeed = 1/60
 client = SightengineClient('185769829', 'b8CCfNrKrYnWYwsUeBbK')
 frame_counter = 0
 cap = cv2.VideoCapture('images/storerobbery.mp4')
@@ -75,7 +75,6 @@ class DisplayWindow(App):
         frame_counter += 1
 
         cv2.imwrite(file_name, frame)
-        cv2.imwrite("images/live.jpg", frame)
         self.image.reload()
     
     # Refreshes label at specified time interval, checking for change in detection boolean
@@ -92,7 +91,7 @@ def analyzeFrame():
         global weaponFlag
         global detected
         if not detected:
-            output = client.check('wad').set_file('images/live.jpg')
+            output = client.check('wad').set_file(file_name)
             if output['status'] != 'failure':
                 if output['weapon'] > 0.1:
                     if not detected:
