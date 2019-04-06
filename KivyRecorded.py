@@ -44,10 +44,10 @@ server.login(msg['From'], password)
 account_sid = 'AC90f079a5489b8cb3980a7c08e5d0f6ea'
 auth_token = '0b7adcb970830513ce6ae468edd6c535'
 twilioClient = Client(account_sid, auth_token)
-detected = False;
+detected = False
 
 
-# Definition of kivy App instance
+# Definition of Kivy App instance
 class DisplayWindow(App):
     global weaponFlag
     # Defining window contents
@@ -75,7 +75,7 @@ class DisplayWindow(App):
         frame_counter += 1
 
         cv2.imwrite(file_name, frame)
-        cv2.imwrite('images/live.jpg', frame)
+        cv2.imwrite("images/live.jpg", frame)
         self.image.reload()
     
     # Refreshes label at specified time interval, checking for change in detection boolean
@@ -90,7 +90,7 @@ def analyzeFrame():
     while True:
         global frame_counter
         global weaponFlag
-        global text_sent
+        global detected
         if not detected:
             output = client.check('wad').set_file('images/live.jpg')
             if output['status'] != 'failure':
@@ -113,7 +113,7 @@ def analyzeFrame():
                         server.quit()
                         print("successfully sent email to %s:" % (msg['To']))
                         weaponFlag = True
-                        text_sent = True
+                        detected = True
                         print(message.sid)
             frame_counter = 0
 
