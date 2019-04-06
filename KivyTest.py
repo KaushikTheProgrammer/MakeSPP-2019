@@ -5,18 +5,26 @@ from kivy.clock import Clock
 from kivy.uix.image import Image
 
 
-class thiccBoi(App):
+# Definition of kivy App instance
+class DisplayWindow(App):
     thing = False
+
+    # Defining window contents
     def build(self):
+        # Box to contain image and label attributes
         self.box = BoxLayout(orientation='horizontal', spacing=20)
         self.image = Image(source="1.jpg")
-        self.mylabel = Label(text="one")
-        Clock.schedule_interval(self.Clock_Callback, 1/60)
-        Clock.schedule_interval(self.Clock_Callback2, 1)
+        self.label = Label(text="one")
+        # Dynamic callbacks scheduled with Clock to display video feed and analysis
+        Clock.schedule_interval(self.videoCallback, 1/60)
+        Clock.schedule_interval(self.labelCallback, 1)
+        # Adding attributes to box as widgets
         self.box.add_widget(self.image)
-        self.box.add_widget(self.mylabel)
+        self.box.add_widget(self.label)
         return self.box
-    def Clock_Callback(self, dt):
+
+    # Reloads image from the disk with specified refresh rate
+    def videoCallback(self, dt):
         # Change to image.reload() in final
         if(self.thing):
             self.image.source = "1.jpg"
@@ -24,11 +32,14 @@ class thiccBoi(App):
         else:
             self.image.source = "2.jpg"
             self.thing = True
-    def Clock_Callback2(self, dt):
+
+    # Refreshes label at specified time interval, checking for change in detection boolean
+    def labelCallback(self, dt):
         if(self.thing):
-            self.mylabel.text = "one"
+            self.label.text = "one"
         else:
-            self.mylabel.text = "two"
+            self.label.text = "two"
 
 
-thiccBoi().run()
+# Running kivy app
+DisplayWindow().run()
