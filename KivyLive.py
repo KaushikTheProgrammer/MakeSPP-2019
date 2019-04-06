@@ -3,28 +3,63 @@ from kivy.uix.label import Label
 from kivy.uix.boxlayout import BoxLayout
 from kivy.clock import Clock
 from kivy.uix.image import Image
+from sightengine.client import SightengineClient
+from twilio.rest import Client
+from email.mime.multipart import MIMEMultipart
+from email.mime.text import MIMEText
 import cv2
 import threading
-from PIL import Image as PILIMAGE
+import smtplib
 
 file_name = "image.jpg"
-framespeed = 1/10
+framespeed = 1 / 60
+client = SightengineClient('185769829', 'b8CCfNrKrYnWYwsUeBbK')
+frame_counter = 0
+cap = cv2.VideoCapture(0)
+weaponFlag = False
+
+# create message object instance
+msg = MIMEMultipart()
+
+message = "Thank you"
+
+# setup the parameters of the message
+password = "MakeSPP-2019"
+msg['From'] = "makesppdetector@gmail.com"
+msg['To'] = "kaushikpprakash@gmail.com"
+msg['Subject'] = "Gun Detected! ACT IMMEDIATELY!"
+
+# add in the message body
+msg.attach(MIMEText(message, 'plain'))
+
+# create server
+server = smtplib.SMTP('smtp.gmail.com: 587')
+
+server.starttls()
+
+# Login Credentials for sending the mail
+server.login(msg['From'], password)
+
+account_sid = 'AC90f079a5489b8cb3980a7c08e5d0f6ea'
+auth_token = '0b7adcb970830513ce6ae468edd6c535'
+twilioClient = Client(account_sid, auth_token)
+detected = False
 
 
-# Definition of kivy App instance
+# Definition of Kivy App instance
 class DisplayWindow(App):
-    thing = False
+    global weaponFlag
 
     # Defining window contents
     def build(self):
         # Layout of window to contain image and label attributes
         self.layout = BoxLayout(orientation="vertical")
-        self.title_text = Label(text="Title", size_hint=(1, .1))
-        self.image = Image(source="blank.jpg", size_hint=(1, .7))
+        self.title_text = Label(text="Weapon Detection", size_hint=(1, .1))
+        self.image = Image(source=file_name, size_hint=(1, .7))
         self.output = Label(text="one", size_hint=(1, .1))
         # Dynamic callbacks scheduled with Clock to display video feed and analysis
+        Clock.schedule_interval(self.labelCallback, framespeed)
         Clock.schedule_interval(self.videoCallback, framespeed)
-        Clock.schedule_interval(self.labelCallback, 1)
         # Adding attributes to box as widgets
         self.layout.add_widget(self.title_text)
         self.layout.add_widget(self.image)
@@ -33,46 +68,64 @@ class DisplayWindow(App):
 
     # Reloads image from the disk with specified refresh rate
     def videoCallback(self, dt):
-        self.image.source = file_name
-        try:
-            PILIMAGE.open("image.jpg").verify()
-            self.image.reload()
-        except Exception:
-            self.image.source = file_name
+        # Capture frame-by-frame
+        global cap
+        ret, frame = cap.read()
+        global frame_counter
+        frame_counter += 1
+
+        cv2.imwrite(file_name, frame)
+        cv2.imwrite("images/live.jpg", frame)
+        self.image.reload()
 
     # Refreshes label at specified time interval, checking for change in detection boolean
     def labelCallback(self, dt):
-        if(self.thing):
-            self.output.text = "one"
+        if weaponFlag:
+            self.output.text = "Weapon detected! Call the proper authorities!"
         else:
-            self.output.text = "two"
+            self.output.text = ""
 
 
-def userInterface():
-    DisplayWindow().run()
+def analyzeFrame():
+    while True:
+        global frame_counter
+        global weaponFlag
+        global detected
+        if not detected:
+            output = client.check('wad').set_file('images/live.jpg')
+            if output['status'] != 'failure':
+                if output['weapon'] > 0.1:
+                    if not detected:
+                        message = twilioClient.messages \
+                            .create(
+                            body="Gun Detected. Do something",
+                            from_='+18482334348',
+                            to='+17327725794'
+                        )
+                        message = twilioClient.messages \
+                            .create(
+                            body="Gun Detected. Do something",
+                            from_='+18482334348',
+                            to='+18482188011'
+                        )
+                        # send the message via the server.
+                        server.sendmail(msg['From'], msg['To'], msg.as_string())
+                        server.sendmail(msg['From'], "mwolak07@gmail.com", msg.as_string())
+                        server.quit()
+                        print("successfully sent email to %s:" % (msg['To']))
+                        weaponFlag = True
+                        detected = True
+                        print(message.sid)
+            frame_counter = 0
 
 
 if __name__ == "__main__":
+    t2 = threading.Thread(target=analyzeFrame)
+    t2.start()
 
-    t1 = threading.Thread(target=userInterface)
-    t1.start()
+    DisplayWindow().run()
 
-    frame_counter = 0
-    cap = cv2.VideoCapture(0)
-
-    while True:
-        # Capture frame-by-frame
-        ret, frame = cap.read()
-        frame_counter += 1
-
-        # cv2.imshow('frame', frame)
-        cv2.imwrite(file_name, frame)
-
-        if cv2.waitKey(1) & 0xFF == ord('q'):
-            isQuit = True
-            break
-
-    t1.join()
+    t2.join()
 
     # When everything done, release the capture
     cap.release()
