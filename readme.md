@@ -1,5 +1,5 @@
 Dependencies:
-- python version: 3.7
+- python version: 3.6
 - google-cloud-vision --> (pip install --upgrade google-cloud-vision)
 - opencv --> (pip install opencv-python)
 - sightengine --> (pip install sightengine)

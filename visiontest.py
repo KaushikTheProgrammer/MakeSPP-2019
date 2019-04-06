@@ -20,7 +20,7 @@ file_name = 'images/live.jpg'
 
 frame_counter = 0
 
-while(True):
+while True:
     # Capture frame-by-frame
     ret, frame = cap.read()
     frame_counter += 1
