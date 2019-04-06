@@ -3,17 +3,20 @@ from kivy.uix.label import Label
 from kivy.uix.boxlayout import BoxLayout
 from kivy.clock import Clock
 from kivy.uix.image import Image
+from sightengine.client import SightengineClient
 import cv2
 import threading
+import io
+import os
 from PIL import Image as PILIMAGE
 
 file_name = "image.jpg"
 framespeed = 1/10
-
+client = SightengineClient('185769829', 'b8CCfNrKrYnWYwsUeBbK')
 
 # Definition of kivy App instance
 class DisplayWindow(App):
-    thing = False
+    violenceFlag = False
 
     # Defining window contents
     def build(self):
@@ -42,8 +45,8 @@ class DisplayWindow(App):
 
     # Refreshes label at specified time interval, checking for change in detection boolean
     def labelCallback(self, dt):
-        if(self.thing):
-            self.output.text = "one"
+        if(self.violenceFlag):
+            self.output.text = "Violence has been detected."
         else:
             self.output.text = "two"
 
@@ -52,25 +55,41 @@ def userInterface():
     DisplayWindow().run()
 
 
+frame_counter = 0
+
+def analyzeFrame():
+    while True:
+        global frame_counter
+        if frame_counter == 10:
+            output = client.check('wad').set_file('images/live.jpg')
+            print(output)
+            frame_counter = 0
+
+
+
 if __name__ == "__main__":
 
     t1 = threading.Thread(target=userInterface)
+    t2 = threading.Thread(target = analyzeFrame)
     t1.start()
+    t2.start()
 
-    frame_counter = 0
-    cap = cv2.VideoCapture('images/boxing.mp4')
+    cap = cv2.VideoCapture('images/storerobbery.mp4')
 
     while True:
         # Capture frame-by-frame
         ret, frame = cap.read()
+        frame_counter += 1
 
         cv2.imwrite(file_name, frame)
-
+        cv2.imwrite('images/live.jpg', frame)
+    
         if cv2.waitKey(1) & 0xFF == ord('q'):
             isQuit = True
             break
 
     t1.join()
+    t2.join()
 
     # When everything done, release the capture
     cap.release()
