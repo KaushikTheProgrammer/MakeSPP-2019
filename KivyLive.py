@@ -5,8 +5,10 @@ from kivy.clock import Clock
 from kivy.uix.image import Image
 import cv2
 import threading
+from PIL import Image as PILIMAGE
 
 file_name = "image.jpg"
+framespeed = 1/15
 
 
 # Definition of kivy App instance
@@ -21,7 +23,7 @@ class DisplayWindow(App):
         self.image = Image(source="image.jpg", size_hint=(1, .7))
         self.output = Label(text="one", size_hint=(1, .1))
         # Dynamic callbacks scheduled with Clock to display video feed and analysis
-        Clock.schedule_interval(self.videoCallback, 1/10)
+        Clock.schedule_interval(self.videoCallback, framespeed)
         Clock.schedule_interval(self.labelCallback, 1)
         # Adding attributes to box as widgets
         self.layout.add_widget(self.title_text)
@@ -29,10 +31,12 @@ class DisplayWindow(App):
         self.layout.add_widget(self.output)
         return self.layout
 
+
     # Reloads image from the disk with specified refresh rate
     def videoCallback(self, dt):
-        # Change to image.reload() in final
+        PILIMAGE.open("image.jpg")
         self.image.reload()
+
 
     # Refreshes label at specified time interval, checking for change in detection boolean
     def labelCallback(self, dt):
@@ -60,7 +64,6 @@ if __name__ == "__main__":
         frame_counter += 1
 
         # cv2.imshow('frame', frame)
-
         cv2.imwrite(file_name, frame)
 
         if cv2.waitKey(1) & 0xFF == ord('q'):
