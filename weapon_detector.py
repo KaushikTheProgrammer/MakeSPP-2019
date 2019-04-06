@@ -15,7 +15,6 @@ while True:
     
     cv2.imshow('frame', frame)
 
-    
     if frame_counter == 10:
         cv2.imwrite(file_name, frame)
         output = client.check('wad').set_file('images/live.jpg')

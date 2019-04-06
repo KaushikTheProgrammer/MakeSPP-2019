@@ -4,10 +4,7 @@ from kivy.uix.boxlayout import BoxLayout
 from kivy.clock import Clock
 from kivy.uix.image import Image
 from sightengine.client import SightengineClient
-<<<<<<< HEAD
 from twilio.rest import Client
-=======
->>>>>>> 398d0b1ad120232968f08d0af52b3aa7a043dcb8
 import cv2
 import threading
 
@@ -21,7 +18,9 @@ weaponFlag = False
 
 account_sid = 'AC90f079a5489b8cb3980a7c08e5d0f6ea'
 auth_token = '0b7adcb970830513ce6ae468edd6c535'
-client = Client(account_sid, auth_token)
+twilioClient = Client(account_sid, auth_token)
+text_sent = False;
+
 
 # Definition of kivy App instance
 class DisplayWindow(App):
@@ -34,7 +33,7 @@ class DisplayWindow(App):
         self.image = Image(source=file_name, size_hint=(1, .7))
         self.output = Label(text="one", size_hint=(1, .1))
         # Dynamic callbacks scheduled with Clock to display video feed and analysis
-        Clock.schedule_interval(self.labelCallback, 1)
+        Clock.schedule_interval(self.labelCallback, framespeed)
         Clock.schedule_interval(self.videoCallback, framespeed)
         # Adding attributes to box as widgets
         self.layout.add_widget(self.title_text)
@@ -56,13 +55,8 @@ class DisplayWindow(App):
     
     # Refreshes label at specified time interval, checking for change in detection boolean
     def labelCallback(self, dt):
-<<<<<<< HEAD
-        if(self.violenceFlag):
-            self.output.text = "Violence has been detected."
-=======
         if weaponFlag:
             self.output.text = "Weapon detected! Call the proper authorities!"
->>>>>>> 398d0b1ad120232968f08d0af52b3aa7a043dcb8
         else:
             self.output.text = ""
 
@@ -70,15 +64,22 @@ class DisplayWindow(App):
 def analyzeFrame():
     while True:
         global frame_counter
-<<<<<<< HEAD
-=======
         global weaponFlag
->>>>>>> 398d0b1ad120232968f08d0af52b3aa7a043dcb8
-        if frame_counter == 10:
+        global text_sent
+        if frame_counter == 2:
             output = client.check('wad').set_file('images/live.jpg')
             if output['status'] != 'failure':
                 if output['weapon'] > 0.1:
                     weaponFlag = True
+                    if not text_sent:
+                        message = twilioClient.messages \
+                            .create(
+                            body="Gun Detected. Do something",
+                            from_='+18482334348',
+                            to='+17327725794'
+                        )
+                        text_sent = True
+                        print(message.sid)
             frame_counter = 0
 
 
