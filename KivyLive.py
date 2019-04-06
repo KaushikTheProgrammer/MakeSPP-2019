@@ -8,7 +8,7 @@ import threading
 from PIL import Image as PILIMAGE
 
 file_name = "image.jpg"
-framespeed = 1/15
+framespeed = 1/10
 
 
 # Definition of kivy App instance
@@ -20,7 +20,7 @@ class DisplayWindow(App):
         # Layout of window to contain image and label attributes
         self.layout = BoxLayout(orientation="vertical")
         self.title_text = Label(text="Title", size_hint=(1, .1))
-        self.image = Image(source="image.jpg", size_hint=(1, .7))
+        self.image = Image(source=file_name, size_hint=(1, .7))
         self.output = Label(text="one", size_hint=(1, .1))
         # Dynamic callbacks scheduled with Clock to display video feed and analysis
         Clock.schedule_interval(self.videoCallback, framespeed)
@@ -31,12 +31,13 @@ class DisplayWindow(App):
         self.layout.add_widget(self.output)
         return self.layout
 
-
     # Reloads image from the disk with specified refresh rate
     def videoCallback(self, dt):
-        PILIMAGE.open("image.jpg")
-        self.image.reload()
-
+        try:
+            PILIMAGE.open("image.jpg")
+            self.image.reload()
+        except Exception:
+            self.image.source = self.image.source
 
     # Refreshes label at specified time interval, checking for change in detection boolean
     def labelCallback(self, dt):
