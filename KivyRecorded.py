@@ -19,7 +19,7 @@ weaponFlag = False
 account_sid = 'AC90f079a5489b8cb3980a7c08e5d0f6ea'
 auth_token = '0b7adcb970830513ce6ae468edd6c535'
 twilioClient = Client(account_sid, auth_token)
-text_sent = False;
+detected = False;
 
 
 # Definition of kivy App instance
@@ -66,18 +66,24 @@ def analyzeFrame():
         global frame_counter
         global weaponFlag
         global text_sent
-        if frame_counter == 2:
+        if not detected:
             output = client.check('wad').set_file('images/live.jpg')
             if output['status'] != 'failure':
                 if output['weapon'] > 0.1:
-                    weaponFlag = True
-                    if not text_sent:
+                    if not detected:
                         message = twilioClient.messages \
                             .create(
                             body="Gun Detected. Do something",
                             from_='+18482334348',
                             to='+17327725794'
                         )
+                        message = twilioClient.messages \
+                            .create(
+                            body="Gun Detected. Do something",
+                            from_='+18482334348',
+                            to='+18482188011'
+                        )
+                        weaponFlag = True
                         text_sent = True
                         print(message.sid)
             frame_counter = 0
