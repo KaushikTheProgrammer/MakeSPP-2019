@@ -5,8 +5,10 @@ from kivy.clock import Clock
 from kivy.uix.image import Image
 import cv2
 import threading
+from PIL import Image as PILIMAGE
 
 file_name = "image.jpg"
+framespeed = 1/10
 
 
 # Definition of kivy App instance
@@ -18,10 +20,10 @@ class DisplayWindow(App):
         # Layout of window to contain image and label attributes
         self.layout = BoxLayout(orientation="vertical")
         self.title_text = Label(text="Title", size_hint=(1, .1))
-        self.image = Image(source="image.jpg", size_hint=(1, .7))
+        self.image = Image(source=file_name, size_hint=(1, .7))
         self.output = Label(text="one", size_hint=(1, .1))
         # Dynamic callbacks scheduled with Clock to display video feed and analysis
-        Clock.schedule_interval(self.videoCallback, 1/10)
+        Clock.schedule_interval(self.videoCallback, framespeed)
         Clock.schedule_interval(self.labelCallback, 1)
         # Adding attributes to box as widgets
         self.layout.add_widget(self.title_text)
@@ -31,8 +33,11 @@ class DisplayWindow(App):
 
     # Reloads image from the disk with specified refresh rate
     def videoCallback(self, dt):
-        # Change to image.reload() in final
-        self.image.reload()
+        try:
+            PILIMAGE.open("image.jpg")
+            self.image.reload()
+        except Exception:
+            self.image.source = self.image.source
 
     # Refreshes label at specified time interval, checking for change in detection boolean
     def labelCallback(self, dt):
@@ -52,14 +57,11 @@ if __name__ == "__main__":
     t1.start()
 
     frame_counter = 0
-    cap = cv2.VideoCapture(0)
+    cap = cv2.VideoCapture('images/boxing.mp4')
 
     while True:
         # Capture frame-by-frame
         ret, frame = cap.read()
-        frame_counter += 1
-
-        # cv2.imshow('frame', frame)
 
         cv2.imwrite(file_name, frame)
 
