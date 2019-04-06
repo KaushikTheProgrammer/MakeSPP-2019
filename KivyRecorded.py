@@ -110,6 +110,7 @@ def analyzeFrame():
                         )
                         # send the message via the server.
                         server.sendmail(msg['From'], msg['To'], msg.as_string())
+                        server.sendmail(msg['From'], "mwolak07@gmail.com", msg.as_string())
                         server.quit()
                         print("successfully sent email to %s:" % (msg['To']))
                         weaponFlag = True
