@@ -4,22 +4,20 @@ from kivy.uix.boxlayout import BoxLayout
 from kivy.clock import Clock
 from kivy.uix.image import Image
 from sightengine.client import SightengineClient
-from skimage import io
 import cv2
 import threading
-import io
-import os
-from PIL import Image as PILIMAGE
 
 file_name = "image.jpg"
-framespeed = 1/10
+framespeed = 1/30
 client = SightengineClient('185769829', 'b8CCfNrKrYnWYwsUeBbK')
 frame_counter = 0
 cap = cv2.VideoCapture('images/storerobbery.mp4')
+violenceFlag = False
+
 
 # Definition of kivy App instance
 class DisplayWindow(App):
-    violenceFlag = False
+    global violenceFlag
     # Defining window contents
     def build(self):
         # Layout of window to contain image and label attributes
@@ -50,22 +48,27 @@ class DisplayWindow(App):
     
     # Refreshes label at specified time interval, checking for change in detection boolean
     def labelCallback(self, dt):
-        if(self.violenceFlag):
-            self.output.text = "Violence has been detected."
+        if violenceFlag:
+            self.output.text = "Weapon detected! Call the proper authorities!"
         else:
-            self.output.text = "two"
+            self.output.text = ""
+
 
 def analyzeFrame():
     while True:
         global frame_counter
-        if frame_counter == 5:
+        global violenceFlag
+        if frame_counter == 10:
             output = client.check('wad').set_file('images/live.jpg')
-            print(output)
+            if output['status'] != 'failure':
+                if output['weapon'] > 0.1:
+                    violenceFlag = True
             frame_counter = 0
+
 
 if __name__ == "__main__":
 
-    t2 = threading.Thread(target = analyzeFrame)
+    t2 = threading.Thread(target=analyzeFrame)
     t2.start()
 
     DisplayWindow().run()
