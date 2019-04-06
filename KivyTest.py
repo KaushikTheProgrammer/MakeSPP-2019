@@ -1,6 +1,6 @@
 from kivy.app import App
 from kivy.uix.label import Label
-from kivy.uix.floatlayout import FloatLayout
+from kivy.uix.boxlayout import BoxLayout
 from kivy.clock import Clock
 from kivy.uix.image import Image
 
@@ -11,11 +11,11 @@ class DisplayWindow(App):
 
     # Defining window contents
     def build(self):
-        # Box to contain image and label attributes
-        self.layout = FloatLayout(size=(300, 300))
-        self.title_text = Label(text="Title", size_hint=(1, .1), pos=(20, 20))
-        self.image = Image(source="1.jpg", size_hint=(.2, .2), pos=(20, 20))
-        self.output = Label(text="one", size_hint=(.2, .2), pos=(20, 20))
+        # Layout of window to contain image and label attributes
+        self.layout = BoxLayout(orientation="vertical")
+        self.title_text = Label(text="Title", size_hint=(1, .1))
+        self.image = Image(source="1.jpg", size_hint=(1, .7))
+        self.output = Label(text="one", size_hint=(1, .1))
         # Dynamic callbacks scheduled with Clock to display video feed and analysis
         Clock.schedule_interval(self.videoCallback, 1/60)
         Clock.schedule_interval(self.labelCallback, 1)
