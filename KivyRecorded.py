@@ -54,7 +54,7 @@ class DisplayWindow(App):
     def build(self):
         # Layout of window to contain image and label attributes
         self.layout = BoxLayout(orientation="vertical")
-        self.title_text = Label(text="Weapon Detection", size_hint=(1, .1))
+        self.title_text = Label(text="DeTECT-ProTECT", size_hint=(1, .1))
         self.image = Image(source=file_name, size_hint=(1, .7))
         self.output = Label(text="one", size_hint=(1, .1))
         # Dynamic callbacks scheduled with Clock to display video feed and analysis
@@ -111,10 +111,8 @@ def analyzeFrame():
                         server.sendmail(msg['From'], msg['To'], msg.as_string())
                         server.sendmail(msg['From'], "mwolak07@gmail.com", msg.as_string())
                         server.quit()
-                        print("successfully sent email to %s:" % (msg['To']))
                         weaponFlag = True
                         detected = True
-                        print(message.sid)
             frame_counter = 0
 
 
@@ -130,5 +128,3 @@ if __name__ == "__main__":
     # When everything done, release the capture
     cap.release()
     cv2.destroyAllWindows()
-
-    print("done")
