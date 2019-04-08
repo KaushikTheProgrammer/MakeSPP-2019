@@ -54,7 +54,7 @@ class DisplayWindow(App):
     def build(self):
         # Layout of window to contain image and label attributes
         self.layout = BoxLayout(orientation="vertical")
-        self.title_text = Label(text="Weapon Detection", size_hint=(1, .1))
+        self.title_text = Label(text="DeTECT-ProTECT", size_hint=(1, .1))
         self.image = Image(source=file_name, size_hint=(1, .7))
         self.output = Label(text="one", size_hint=(1, .1))
         # Dynamic callbacks scheduled with Clock to display video feed and analysis
