@@ -19,9 +19,6 @@ import time
 file_name = "image.jpg"
 fps = 60
 client = SightengineClient('1968420216', 'SdWBjWBcGSQWtW9Qkiiq')
-cap = cv2.VideoCapture('images/storerobbery.mp4')
-ret, frame = cap.read()
-newFrame = PILImage.fromarray(frame)
 detected = False
 request_complete = True
 
@@ -53,12 +50,11 @@ auth_token = '0b7adcb970830513ce6ae468edd6c535'
 twilioClient = Client(account_sid, auth_token)
 
 
-def analyzeFrame():
+def analyzeFrame(inputFrame):
     global detected
     global request_complete
-    global newFrame
     request_complete = False
-    newFrame.save(file_name)
+    inputFrame.save(file_name)
     print("file saved")
     if not detected:
         start = time.process_time()
@@ -90,27 +86,23 @@ def analyzeFrame():
                 print(message.sid)
     request_complete = True
 
-
-process = Thread(target=analyzeFrame)
-process.start()
-
 class KivyCamera(Image):
-    def __init__(self, capture, fps, **kwargs):
+    def __init__(self, capture, process, fps, **kwargs):
         super(KivyCamera, self).__init__(**kwargs)
         self.capture = capture
+        self.process = process
         Clock.schedule_interval(self.update, 1.0 / fps)
 
     def update(self, dt):
         global request_complete
-        global process
         global newFrame
         ret, frame = self.capture.read()
         frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
         if request_complete:
-            process.join()
+            self.process.join()
             newFrame = PILImage.fromarray(frame)
-            process = Thread(target=analyzeFrame)
-            process.start()
+            self.process = Thread(target=analyzeFrame, kwargs={'inputFrame': newFrame})
+            self.process.start()
         if ret:
         # convert it to texture
             buf = cv2.flip(frame, 0).tostring()
@@ -129,7 +121,11 @@ class DisplayWindow(App):
         # Layout of window to contain image and label attributes
         self.layout = BoxLayout(orientation="vertical")
         self.title_text = Label(text="DeTECT-ProTECT", size_hint=(1, .1))
-        self.camera = KivyCamera(capture=cap, fps=fps)
+        self.capture = cv2.VideoCapture('images/storerobbery.mp4')
+        self.newFrame = PILImage.fromarray(self.capture.read()[1])
+        self.process = Thread(target=analyzeFrame, kwargs={'inputFrame': self.newFrame})
+        self.process.start()
+        self.camera = KivyCamera(capture=self.capture, process=self.process, fps=fps)
         self.output = Label(text="one", size_hint=(1, .1))
         # Dynamic callbacks scheduled with Clock to display video feed and analysis
         Clock.schedule_interval(self.labelCallback, 1.0/fps)
@@ -148,7 +144,7 @@ class DisplayWindow(App):
 
     def on_stop(self):
         #without this, app will not exit even if the window is closed
-        cap.release()
+        self.capture.release()
+        self.process.join()
 
 DisplayWindow().run()
-process.join()
