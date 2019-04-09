@@ -11,8 +11,6 @@ from email.mime.text import MIMEText
 import cv2
 from threading import Thread
 import smtplib
-import copy
-import numpy as np
 from PIL import Image as PILImage
 import time
 
@@ -54,9 +52,9 @@ def analyzeFrame(inputFrame):
     global detected
     global request_complete
     request_complete = False
-    inputFrame.save(file_name)
-    print("file saved")
     if not detected:
+        inputFrame.save(file_name)
+        print("file saved")
         start = time.process_time()
         output = client.check('wad').set_file(file_name)
         end = time.process_time()
@@ -86,6 +84,7 @@ def analyzeFrame(inputFrame):
                 print(message.sid)
     request_complete = True
 
+
 class KivyCamera(Image):
     def __init__(self, capture, process, fps, **kwargs):
         super(KivyCamera, self).__init__(**kwargs)
@@ -97,14 +96,16 @@ class KivyCamera(Image):
         global request_complete
         global newFrame
         ret, frame = self.capture.read()
-        frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
-        if request_complete:
-            self.process.join()
-            newFrame = PILImage.fromarray(frame)
-            self.process = Thread(target=analyzeFrame, kwargs={'inputFrame': newFrame})
-            self.process.start()
         if ret:
-        # convert it to texture
+            frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+
+            if request_complete:
+                self.process.join()
+                newFrame = PILImage.fromarray(frame)
+                self.process = Thread(target=analyzeFrame, kwargs={'inputFrame': newFrame})
+                self.process.start()
+
+            # convert it to texture
             buf = cv2.flip(frame, 0).tostring()
             image_texture = Texture.create(
                 size=(frame.shape[1], frame.shape[0]), colorfmt='rgb')
@@ -122,10 +123,17 @@ class DisplayWindow(App):
         self.layout = BoxLayout(orientation="vertical")
         self.title_text = Label(text="DeTECT-ProTECT", size_hint=(1, .1))
         self.capture = cv2.VideoCapture('images/storerobbery.mp4')
+        # Detecting fps from the video stream
+        if int(major_ver) < 3:
+            self.fps = self.capture.get(cv2.cv.CV_CAP_PROP_FPS)
+            print("Framerate: %s" % (self.fps))
+        else:
+            self.fps = self.capture.get(cv2.CAP_PROP_FPS)
+            print("Framerate: %s" % (self.fps))
         self.newFrame = PILImage.fromarray(self.capture.read()[1])
         self.process = Thread(target=analyzeFrame, kwargs={'inputFrame': self.newFrame})
         self.process.start()
-        self.camera = KivyCamera(capture=self.capture, process=self.process, fps=fps)
+        self.camera = KivyCamera(capture=self.capture, process=self.process, fps=self.fps)
         self.output = Label(text="one", size_hint=(1, .1))
         # Dynamic callbacks scheduled with Clock to display video feed and analysis
         Clock.schedule_interval(self.labelCallback, 1.0/fps)
@@ -143,8 +151,13 @@ class DisplayWindow(App):
             self.output.text = ""
 
     def on_stop(self):
-        #without this, app will not exit even if the window is closed
+        # Closing video stream and joining threads when the app is closed for a clean exit
         self.capture.release()
         self.process.join()
 
+
+# Find OpenCV version
+(major_ver, minor_ver, subminor_ver) = cv2.__version__.split('.')
+
+# Running the app
 DisplayWindow().run()
