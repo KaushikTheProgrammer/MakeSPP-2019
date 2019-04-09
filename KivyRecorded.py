@@ -8,23 +8,25 @@ from sightengine.client import SightengineClient
 from twilio.rest import Client
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
-import cv2
 from threading import Thread
-import smtplib
 from PIL import Image as PILImage
+import cv2
+import smtplib
 import time
 
-# Global variables for marking detection and timing threads
-detected = False
-request_complete = True
+# Read in sightengine credentials
+credentials = open("sight_engine_info.txt", "r")
+api_user = credentials.readline()
+api_secret = credentials.readline()
+credentials.close()
 
-# Instance of sightengine client with credentials
-client = SightengineClient('1968420216', 'SdWBjWBcGSQWtW9Qkiiq')
+# Create a new sightengine client with credentials
+client = SightengineClient(api_user, api_secret)
 
-# create message object instance
+# Create new instance of a message object
 msg = MIMEMultipart()
- 
- 
+
+# Body of Text and Email Alerts
 message = "Gun Detected! ACT IMMEDIATELY!"
  
 # setup the parameters of the message
@@ -47,6 +49,12 @@ server.login(msg['From'], password)
 account_sid = 'AC90f079a5489b8cb3980a7c08e5d0f6ea'
 auth_token = '0b7adcb970830513ce6ae468edd6c535'
 twilioClient = Client(account_sid, auth_token)
+
+# Global variables for marking detection and timing threads
+detected = False
+request_complete = True
+
+
 
 
 def analyzeFrame(inputFrame):
