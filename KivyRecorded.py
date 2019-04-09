@@ -14,11 +14,12 @@ import smtplib
 from PIL import Image as PILImage
 import time
 
-file_name = "image.jpg"
-fps = 60
-client = SightengineClient('1968420216', 'SdWBjWBcGSQWtW9Qkiiq')
+# Global variables for marking detection and timing threads
 detected = False
 request_complete = True
+
+# Instance of sightengine client with credentials
+client = SightengineClient('1968420216', 'SdWBjWBcGSQWtW9Qkiiq')
 
 # create message object instance
 msg = MIMEMultipart()
@@ -49,20 +50,32 @@ twilioClient = Client(account_sid, auth_token)
 
 
 def analyzeFrame(inputFrame):
+    # Adding required global variables
     global detected
     global request_complete
+    # Marks current thread as active, to not initialize another one
     request_complete = False
+
+    # Only requests from API/ sends messages if gun hasn't been detected
     if not detected:
-        inputFrame.save(file_name)
+        # Stores frame in temporary file
+        inputFrame.save("Image.jpg")
         print("file saved")
+
+        # API request with timing
         start = time.process_time()
-        output = client.check('wad').set_file(file_name)
+        output = client.check('wad').set_file("Image.jpg")
         end = time.process_time()
         print("output received in %s seconds" % (end - start))
         print(output)
+
+        # Checks to make sure API request didn't fail
         if output['status'] != 'failure':
+            # Checks to see if weapon was detected
             if output['weapon'] > 0.1:
                 print("detected")
+
+                # Twilio text messages sent
                 message = twilioClient.messages \
                     .create(
                     body="Gun Detected! ACT IMMEDIATELY!",
@@ -75,54 +88,79 @@ def analyzeFrame(inputFrame):
                     from_='+18482334348',
                     to='+18482188011'
                 )
-                # send the message via the server.
+
+                # Email messages sent via the server.
                 server.sendmail(msg['From'], msg['To'], msg.as_string())
                 server.sendmail(msg['From'], "mwolak07@gmail.com", msg.as_string())
                 server.quit()
                 print("successfully sent email to %s:" % (msg['To']))
+
+                # Marks gun as detected in global variable
                 detected = True
                 print(message.sid)
+
+    # Marks thread as finished, another can be started
     request_complete = True
 
 
+# Class for video capture in Kivy
 class KivyCamera(Image):
+
+    # Constructor taking cv2 capture, process (thread), and framerate
     def __init__(self, capture, process, fps, **kwargs):
         super(KivyCamera, self).__init__(**kwargs)
         self.capture = capture
         self.process = process
+
+        # Creates callback for grabbing and displaying frame
         Clock.schedule_interval(self.update, 1.0 / fps)
 
+    # Callback for camera, grabs and displays frame along with starting threaded analysis
     def update(self, dt):
+        # Required for timing thread creation
         global request_complete
-        global newFrame
+
+        # Grabs status (ret) and frame (frame) from video capture
         ret, frame = self.capture.read()
+
+        # Frame successfully grabbed
         if ret:
+            # Frame is recolored to RGB
             frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
 
+            # Thread is not active, new one is started
             if request_complete:
+                # Old thread is shut down
                 self.process.join()
+                # Frame is copied to a PILImage, and threaded frame analysis is started
                 newFrame = PILImage.fromarray(frame)
                 self.process = Thread(target=analyzeFrame, kwargs={'inputFrame': newFrame})
                 self.process.start()
 
-            # convert it to texture
+            # Frame is buffered and converted to a kivy texture
             buf = cv2.flip(frame, 0).tostring()
-            image_texture = Texture.create(
-                size=(frame.shape[1], frame.shape[0]), colorfmt='rgb')
+            # Texture defined
+            image_texture = Texture.create(size=(frame.shape[1], frame.shape[0]), colorfmt='rgb')
+            # Texture filled form buffer with blit_buffer
             image_texture.blit_buffer(buf, colorfmt='rgb', bufferfmt='ubyte')
-            # display image from the texture
+            # Displaying image from the texture
             self.texture = image_texture
 
 
 # Definition of Kivy App instance
 class DisplayWindow(App):
+    # Required for sharing of weaponFlag across threads
     global weaponFlag
+
     # Defining window contents
     def build(self):
         # Layout of window to contain image and label attributes
         self.layout = BoxLayout(orientation="vertical")
+        # Title of window
         self.title_text = Label(text="DeTECT-ProTECT", size_hint=(1, .1))
+        # cv2 video capture defines
         self.capture = cv2.VideoCapture('images/storerobbery.mp4')
+
         # Detecting fps from the video stream
         if int(major_ver) < 3:
             self.fps = self.capture.get(cv2.cv.CV_CAP_PROP_FPS)
@@ -130,14 +168,21 @@ class DisplayWindow(App):
         else:
             self.fps = self.capture.get(cv2.CAP_PROP_FPS)
             print("Framerate: %s" % (self.fps))
+
+        # Initial copy of frame to PILImage to start analysis
         self.newFrame = PILImage.fromarray(self.capture.read()[1])
+        # Starts frame analysis on seperate thread
         self.process = Thread(target=analyzeFrame, kwargs={'inputFrame': self.newFrame})
         self.process.start()
+        # Initializes camera instance with KivyCamera class
         self.camera = KivyCamera(capture=self.capture, process=self.process, fps=self.fps)
-        self.output = Label(text="one", size_hint=(1, .1))
-        # Dynamic callbacks scheduled with Clock to display video feed and analysis
-        Clock.schedule_interval(self.labelCallback, 1.0/fps)
+        # Initializes output label to show result of frame analysis
+        self.output = Label(text="", size_hint=(1, .1))
+
+        # Dynamic callback (at same rate as video fps) scheduled with Clock to display label for result
+        Clock.schedule_interval(self.labelCallback, 1.0/self.fps)
         # Adding attributes to box as widgets
+
         self.layout.add_widget(self.title_text)
         self.layout.add_widget(self.camera)
         self.layout.add_widget(self.output)
@@ -150,8 +195,8 @@ class DisplayWindow(App):
         else:
             self.output.text = ""
 
+    # Closing video stream and joining threads when the app is closed for a clean exit
     def on_stop(self):
-        # Closing video stream and joining threads when the app is closed for a clean exit
         self.capture.release()
         self.process.join()
 
