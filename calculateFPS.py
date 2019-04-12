@@ -43,5 +43,5 @@ print("Time taken : {0} seconds".format(seconds))
 fps = num_frames / seconds
 print("Estimated frames per second : {0}".format(fps))
 
-# Release video
+# Release video capture
 video.release()
