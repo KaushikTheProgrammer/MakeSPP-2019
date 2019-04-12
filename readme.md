@@ -13,11 +13,13 @@ Description
 
 Environment:
 - python version: 3.6
-- opencv                --> (pip3 install opencv-python)
-- sightengine           --> (pip3 install sightengine)
-- kivy                  --> (pip3 install kivy)
-- twilio                --> (pip3 install twilio)
-- PIL                   --> (pip3 install pillow)
+- opencv                --> (pip install opencv-python)
+- sightengine           --> (pip install sightengine)
+- kivy                  --> (pip install kivy)
+- twilio                --> (pip install twilio)
+- PIL                   --> (pip install pillow)
+
+*pip might default to python 2, in that case, use pip3
 
 Team:
 Mateusz Wolak, Kaushik Prakash
