@@ -15,7 +15,7 @@ import smtplib
 import time
 
 # Read in sightengine credentials
-credentials = open("sight_engine_info.txt", "r")
+credentials = open("sight_engine_KEY.txt", "r")
 api_user = credentials.readline()
 api_secret = credentials.readline()
 credentials.close()
