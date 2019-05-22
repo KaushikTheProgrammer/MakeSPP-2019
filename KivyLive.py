@@ -8,44 +8,60 @@ from sightengine.client import SightengineClient
 from twilio.rest import Client
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
-import cv2
 from threading import Thread
-import smtplib
 from PIL import Image as PILImage
+import cv2
+import smtplib
 import time
+
+# Read in sightengine credentials
+credentials = open("sight_engine_KEY.txt", "r")
+api_user = credentials.readline()
+api_secret = credentials.readline()
+credentials.close()
+
+# Create a new sightengine client with credentials
+client = SightengineClient(api_user, api_secret)
+
+# Create new instance of a message object
+msg = MIMEMultipart()
+
+# Body of Text and Email Alerts
+message = "Gun Detected! ACT IMMEDIATELY!"
+
+# Reads email account credentials
+credentials = open("email_credentials.txt", "r")
+
+# setup the parameters of the message
+msg['From'] = credentials.readline()
+password = credentials.readline()
+credentials.close()
+msg['To'] = "kaushikpprakash@gmail.com"
+msg['Subject'] = "Gun Detected! ACT IMMEDIATELY!"
+ 
+# add in the message body
+msg.attach(MIMEText(message, 'plain'))
+ 
+# create server
+server = smtplib.SMTP('smtp.gmail.com: 587')
+ 
+server.starttls()
+ 
+# Login Credentials for sending the mail
+server.login(msg['From'], password)
+
+# Read in twilio credentials
+credentials = oepn("twilio_credentials", "r")
+
+
+account_sid = credentials.readline()
+auth_token = credentials.readline()
+credentials.close()
+twilioClient = Client(account_sid, auth_token)
 
 # Global variables for marking detection and timing threads
 detected = False
 request_complete = True
-
-# Instance of sightengine client with credentials
-client = SightengineClient('1968420216', 'SdWBjWBcGSQWtW9Qkiiq')
-
-# create message object instance
-msg = MIMEMultipart()
-
-message = "Gun Detected! ACT IMMEDIATELY!"
-
-# setup the parameters of the message
-password = "MakeSPP-2019"
-msg['From'] = "makesppdetector@gmail.com"
-msg['To'] = "kaushikpprakash@gmail.com"
-msg['Subject'] = "Gun Detected! ACT IMMEDIATELY!"
-
-# add in the message body
-msg.attach(MIMEText(message, 'plain'))
-
-# create server
-server = smtplib.SMTP('smtp.gmail.com: 587')
-
-server.starttls()
-
-# Login Credentials for sending the mail
-server.login(msg['From'], password)
-
-account_sid = 'AC90f079a5489b8cb3980a7c08e5d0f6ea'
-auth_token = '0b7adcb970830513ce6ae468edd6c535'
-twilioClient = Client(account_sid, auth_token)
 
 
 def analyzeFrame(inputFrame):
@@ -159,6 +175,9 @@ class DisplayWindow(App):
         self.title_text = Label(text="DeTECT-ProTECT", size_hint=(1, .1))
         # cv2 video capture defines
         self.capture = cv2.VideoCapture(0)
+        
+        # Find OpenCV version
+        (major_ver, minor_ver, subminor_ver) = cv2.__version__.split('.')
 
         # Detecting fps from the video stream
         if int(major_ver) < 3:
@@ -179,14 +198,14 @@ class DisplayWindow(App):
         self.output = Label(text="", size_hint=(1, .1))
 
         # Dynamic callback (at same rate as video fps) scheduled with Clock to display label for result
-        Clock.schedule_interval(self.labelCallback, 1.0 / self.fps)
+        Clock.schedule_interval(self.labelCallback, 1.0/self.fps)
         # Adding attributes to box as widgets
 
         self.layout.add_widget(self.title_text)
         self.layout.add_widget(self.camera)
         self.layout.add_widget(self.output)
         return self.layout
-
+    
     # Refreshes label at specified time interval, checking for change in detection boolean
     def labelCallback(self, dt):
         if detected:
@@ -199,9 +218,6 @@ class DisplayWindow(App):
         self.capture.release()
         self.process.join()
 
-
-# Find OpenCV version
-(major_ver, minor_ver, subminor_ver) = cv2.__version__.split('.')
 
 # Running the app
 DisplayWindow().run()

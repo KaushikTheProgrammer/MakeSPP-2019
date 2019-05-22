@@ -28,17 +28,21 @@ msg = MIMEMultipart()
 
 # Body of Text and Email Alerts
 message = "Gun Detected! ACT IMMEDIATELY!"
- 
+
+# Reads email account credentials
+credentials = open("email_credentials.txt", "r")
+
 # setup the parameters of the message
-password = "MakeSPP-2019"
-msg['From'] = "makesppdetector@gmail.com"
+msg['From'] = credentials.readline()
+password = credentials.readline()
+credentials.close()
 msg['To'] = "kaushikpprakash@gmail.com"
 msg['Subject'] = "Gun Detected! ACT IMMEDIATELY!"
  
 # add in the message body
 msg.attach(MIMEText(message, 'plain'))
  
-#create server
+# create server
 server = smtplib.SMTP('smtp.gmail.com: 587')
  
 server.starttls()
@@ -46,15 +50,18 @@ server.starttls()
 # Login Credentials for sending the mail
 server.login(msg['From'], password)
 
-account_sid = 'AC90f079a5489b8cb3980a7c08e5d0f6ea'
-auth_token = '0b7adcb970830513ce6ae468edd6c535'
+# Read in twilio credentials
+credentials = oepn("twilio_credentials", "r")
+
+
+account_sid = credentials.readline()
+auth_token = credentials.readline()
+credentials.close()
 twilioClient = Client(account_sid, auth_token)
 
 # Global variables for marking detection and timing threads
 detected = False
 request_complete = True
-
-
 
 
 def analyzeFrame(inputFrame):
@@ -167,7 +174,10 @@ class DisplayWindow(App):
         # Title of window
         self.title_text = Label(text="DeTECT-ProTECT", size_hint=(1, .1))
         # cv2 video capture defines
-        self.capture = cv2.VideoCapture('images/storerobbery.mp4')
+        self.capture = cv2.VideoCapture('storerobbery.mp4')
+        
+        # Find OpenCV version
+        (major_ver, minor_ver, subminor_ver) = cv2.__version__.split('.')
 
         # Detecting fps from the video stream
         if int(major_ver) < 3:
@@ -208,9 +218,6 @@ class DisplayWindow(App):
         self.capture.release()
         self.process.join()
 
-
-# Find OpenCV version
-(major_ver, minor_ver, subminor_ver) = cv2.__version__.split('.')
 
 # Running the app
 DisplayWindow().run()
